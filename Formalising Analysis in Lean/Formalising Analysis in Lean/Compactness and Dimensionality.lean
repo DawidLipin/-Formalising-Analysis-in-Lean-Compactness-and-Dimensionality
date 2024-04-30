@@ -22,7 +22,8 @@ We also prove Riesz's lemma as it is needed to prove the main theorem.
 -- and partially proved by Prof. Kevin Buzzard
 
 /-- Proves property of multiplication by constant for infimum --/
-lemma iInf_scalar_mul {ι : Type*} (f : ι → ℝ) {c : ℝ} (hc : 0 ≤ c) :
+lemma iInf_scalar_mul
+    {ι : Type*} (f : ι → ℝ) {c : ℝ} (hc : 0 ≤ c) :
     ⨅ i, (f i * c) = (⨅ i, f i) * c := by
   exact (Real.iInf_mul_of_nonneg hc fun i ↦ f i).symm
 
@@ -30,8 +31,10 @@ lemma iInf_scalar_mul {ι : Type*} (f : ι → ℝ) {c : ℝ} (hc : 0 ≤ c) :
 Proof that for a fixed x, infimum with respect to y of ‖x-y‖ is less than
 ‖x-z‖ for any z in Y.
 --/
-lemma iInf_leq_all {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
-    {Y : Subspace ℝ X} {x : X} : ∀ z : Y, ⨅ y : Y, ‖x-y‖ ≤ ‖x-z‖ := by
+lemma iInf_leq_all
+    {𝕜 : Type u_1} [NormedField 𝕜]
+    {X : Type} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+    {Y : Subspace 𝕜 X} {x : X} : ∀ z : Y, ⨅ y : Y, ‖x-y‖ ≤ ‖x-z‖ := by
   intro z
   refine ciInf_le ?_ z
   use 0
@@ -99,17 +102,11 @@ lemma norm_ineq_iInf_eps
     {Y : Subspace ℝ X}
     (hFc : IsClosed (Y : Set X)) (x' : X) (hF : x' ∉ Y)
     (ε : ℝ ) (hε : ε > 0) (hε2 : ε < 1):
-    ∃ y' : Y, ⨅ y : Y, ‖x'-y‖ ≤ ‖x'-y'‖ ∧ ‖x'-y'‖ ≤ ⨅ y : Y, ‖x'-y‖/(1-ε) := by
+    ∃ y' : Y, ‖x'-y'‖ ≤ ⨅ y : Y, ‖x'-y‖/(1-ε) := by
   have lemma0 := norm_leq_iInf_div_eps hFc x' hF ε hε hε2
   cases' lemma0 with y' hy'
   use y'
-  constructor
-  · refine ciInf_le ?_ y'
-    use 0
-    intro r
-    rintro ⟨y, rfl⟩
-    simp only [norm_nonneg]
-  · exact hy'
+
 
 /--
 Proof that the norm of normalized x is 1.
@@ -127,9 +124,9 @@ Proof that norm distance between y' in Y and x not in Y is not 0.
 Used in proof of riesz_lemma_norm and eps_leq_normal_diff.
 --/
 lemma norm_dist_ne_0
-    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
-    {Y : Subspace ℝ X}
-     (x' : X)
+    {𝕜 : Type u_1} [NormedField 𝕜]
+    {X : Type} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+    {Y : Subspace 𝕜 X} (x' : X)
     (hF : x' ∉ Y) (y' : Y):
     ‖x'-y'.val‖ ≠ 0 := by
   simp only [norm_ne_zero_iff, NNReal.ne_iff]
@@ -149,13 +146,13 @@ lemma eps_leq_normal_diff
     {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     {Y : Subspace ℝ X} (x' : X)
     (hF : x' ∉ Y) (y' : Y) (ε : ℝ ) (hε2 : ε < 1)
-    (ht : ⨅ y : Y, ‖x'-y‖ ≤ ‖x'-y'‖ ∧ ‖x'-y'‖ ≤ ⨅ y : Y, ‖x'-y‖/(1-ε)):
+    (ht : ‖x'-y'‖ ≤ ⨅ y : Y, ‖x'-y‖/(1-ε)):
     ∀ y : Y, 1 - ε ≤ ‖(1/‖x'-y'‖) • (x' - y')-y‖ := by
   -- Most of this code is a simple manipulation of equations as
   -- it follows directly by rearranging second part of ht iInf_leq_all
   -- and the fact that (y' + ‖x' - ↑y'‖ • y) ∈ Y
   intro y
-  cases' ht with h1 h2
+
   -- Prove statments needed for assumptions of further lemmas
   -- and to simplify the goal
   have h3 : ‖x'-y'.val‖ ≠ 0 := norm_dist_ne_0 x' hF y'
@@ -179,14 +176,14 @@ lemma eps_leq_normal_diff
   have h6 : (1-ε) > 0 := by
     exact sub_pos.mpr hε2
   have h7 : (1 - ε) * ‖x' - ↑y'‖ ≤ ‖x' - ↑(y' + ‖x' - ↑y'‖ • y)‖ := by
-    rw [← mul_le_mul_left h6] at h2
+    rw [← mul_le_mul_left h6] at ht
     have h7_1 : ⨅ (y : Y), ‖x' - ↑y‖ / (1 - ε) = (⨅ (y : Y), ‖x' - ↑y‖) / (1 - ε) := by
       simp only [div_eq_mul_inv]
       apply iInf_scalar_mul
       simp [hε2.le]
-    rw [h7_1, mul_div, (mul_comm (1 - ε) (⨅ (y : Y), ‖x' - ↑y‖)), ← mul_div, div_self, mul_one] at h2
+    rw [h7_1, mul_div, (mul_comm (1 - ε) (⨅ (y : Y), ‖x' - ↑y‖)), ← mul_div, div_self, mul_one] at ht
     -- Obtained an extra goal from div_self
-    · exact le_trans h2 h5
+    · exact le_trans ht h5
     · exact ne_of_gt h6
   have h9 : 0 ≤ ‖x' - ↑y'‖⁻¹ := by
     exact inv_nonneg.mpr (norm_nonneg (x' - ↑y'))
@@ -215,8 +212,8 @@ theorem riesz_lemma_norm
     ∃ x : X, x ∉ Y ∧ ‖x‖=1 ∧ ⨅ y : Y, ‖x-y‖ ≥ 1-ε := by
   -- Most important parts of this proof have been proven above
   cases' hF with x' hx'
-  have corr_iInf : ∃ y' : Y, ⨅ y : Y, ‖x'-y‖ ≤ ‖x'-y'‖ ∧
-      ‖x'-y'‖ ≤ ⨅ y : Y, ‖x'-y‖/(1-ε) := norm_ineq_iInf_eps hFc x' hx' ε hε hε2
+  have corr_iInf : ∃ y' : Y, ‖x'-y'‖ ≤ ⨅ y : Y, ‖x'-y‖/(1-ε) :=
+    norm_ineq_iInf_eps hFc x' hx' ε hε hε2
   cases' corr_iInf with y' hy'
   -- Consider x = (1/‖x'-y'.val‖) • (x' - y'.val), with x' obtained from hF and
   -- y' from theorem proven above (norm_ineq_iInf_eps)
@@ -251,7 +248,8 @@ Proof that Y given by the span of all previous element in a sequence
 is finite dimensional.
 Used in g_riesz_next and g_riesz_next_spec.
 --/
-lemma fin_dim_Y_span_riesz {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+lemma fin_dim_Y_span_riesz
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (k : ℕ) (g' : (m : ℕ) → m < k → X) :
     let Y : Subspace ℝ X := Submodule.span ℝ {x | ∃ i : {i : ℕ // i < k}, g' i.val i.property = x}
     FiniteDimensional ℝ Y := by
@@ -273,7 +271,8 @@ Proof that if X is not finite dimentional then for Y given by the span
 of all previous element in a sequence there exists an element not in Y.
 Used in g_riesz_next and g_riesz_next_spec.
 --/
-lemma strict_sub_Y_span_riesz {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+lemma strict_sub_Y_span_riesz
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (h_inf : ¬FiniteDimensional ℝ X) (k : ℕ) (g' : (m : ℕ) → m < k → X) :
     let Y : Subspace ℝ X := Submodule.span ℝ {x | ∃ i : {i : ℕ // i < k}, g' i.val i.property = x}
     ∃ z, z ∉ Y := by
@@ -299,7 +298,8 @@ Definition of a function with properties
 needed to construct g_riesz.
 Used to define g_riesz.
 --/
-noncomputable def g_riesz_next {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+noncomputable def g_riesz_next
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (h_inf : ¬FiniteDimensional ℝ X) (ε : ℝ) (hε : ε > 0)
     (hε2 : ε < 1) (k : ℕ) (g' : (m : ℕ) → m < k → X) : X :=
   let Y : Subspace ℝ X := Submodule.span ℝ {x | ∃ i : {i : ℕ // i < k}, g' i.val i.property = x}
@@ -315,7 +315,8 @@ Proof of properties of g_riesz_next obtained from
 the statement of Riesz's lemma.
 Used in proof of g_riesz_spec1, g_riesz_spec2 and g_riesz_spec3.
 --/
-lemma g_riesz_next_spec {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+lemma g_riesz_next_spec
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (h_inf : ¬FiniteDimensional ℝ X) (ε : ℝ) (hε : ε > 0)
     (hε2 : ε < 1) (k : ℕ) (g' : (m : ℕ) → m < k → X) :
     let Y : Subspace ℝ X := Submodule.span ℝ {x | ∃ i : {i : ℕ // i < k}, g' i.val i.property = x}
@@ -335,7 +336,8 @@ constructed using g_riesz_next.
 Used in g_riesz_spec, g_riesz_spec1, g_riesz_spec2, g_riesz_spec3
 f_dist_eps, dim_inf_implies_not_compact, .
 --/
-noncomputable def g_riesz {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+noncomputable def g_riesz
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (h_inf : ¬FiniteDimensional ℝ X) (ε : ℝ) (hε : ε > 0)
     (hε2 : ε < 1) : ℕ → X :=
   fun n => Nat.strongRec (g_riesz_next h_inf ε hε hε2) n
@@ -344,7 +346,8 @@ noncomputable def g_riesz {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
 Proof that g_reisz can be constructed using g_riesz_next
 Used in g_riesz_spec1, g_riesz_spec2, g_riesz_spec3.
 --/
-lemma g_riesz_spec {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+lemma g_riesz_spec
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (h_inf : ¬FiniteDimensional ℝ X) (ε : ℝ) (hε : ε > 0)
     (hε2 : ε < 1) (n : ℕ) :
     g_riesz h_inf ε hε hε2 n = g_riesz_next h_inf ε hε hε2 n (fun k _ => g_riesz h_inf ε hε hε2 k) := by
@@ -355,7 +358,8 @@ lemma g_riesz_spec {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
 Proof that g_reisz has the first property given by Riesz's lemma.
 Unused but included for completeness.
 --/
-lemma g_riesz_spec1 {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+lemma g_riesz_spec1
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (h_inf : ¬FiniteDimensional ℝ X) (ε : ℝ) (hε : ε > 0)
     (hε2 : ε < 1) (n : ℕ) :
     let Y : Subspace ℝ X := Submodule.span ℝ {x | ∃ i : {i : ℕ // i < n}, g_riesz h_inf ε hε hε2 i.val = x}
@@ -368,7 +372,8 @@ lemma g_riesz_spec1 {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
 Proof that g_reisz has the second property given by Riesz's lemma.
 Used in dim_inf_implies_not_compact
 --/
-lemma g_riesz_spec2 {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+lemma g_riesz_spec2
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (h_inf : ¬FiniteDimensional ℝ X) (ε : ℝ) (hε : ε > 0)
     (hε2 : ε < 1) (n : ℕ) :
     ‖g_riesz h_inf ε hε hε2 n‖=1 := by
@@ -379,7 +384,8 @@ lemma g_riesz_spec2 {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
 Proof that g_reisz has the third property given by Riesz's lemma.
 Used in f_dist_eps.
 --/
-lemma g_riesz_spec3 {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+lemma g_riesz_spec3
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (h_inf : ¬FiniteDimensional ℝ X) (ε : ℝ) (hε : ε > 0)
     (hε2 : ε < 1) (n : ℕ) :
     let Y : Subspace ℝ X := Submodule.span ℝ {x | ∃ i : {i : ℕ // i < n}, g_riesz h_inf ε hε hε2 i.val = x}
@@ -394,7 +400,8 @@ Proof any two elements in the sequence given by g_riesz are at least 1/2 apart.
 Version with inequality. Used to proof the version with not equal.
 Used in f_dist_eps_eq.
 --/
-lemma f_dist_eps_leq {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+lemma f_dist_eps_leq
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (h_dim : ¬FiniteDimensional ℝ X):
     let f : ℕ → X := g_riesz h_dim (1/2 : ℝ) (by norm_num) (by norm_num)
     ∀ n m : ℕ, n < m → ‖f n - f m‖ ≥ 1/2 := by
@@ -418,7 +425,8 @@ lemma f_dist_eps_leq {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
 Proof any two elements in the sequence given by g_riesz are at least 1/2 apart.
 Used in dim_inf_implies_not_compact.
 --/
-lemma f_dist_eps_eq {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+lemma f_dist_eps_eq
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
     (h_dim : ¬FiniteDimensional ℝ X):
     let f : ℕ → X := g_riesz h_dim (1/2 : ℝ) (by norm_num) (by norm_num)
     ∀ n m : ℕ, n ≠ m → ‖f n - f m‖ ≥ 1/2 := by
