@@ -48,8 +48,9 @@ Proof that for any small ε > 0 and x not in Y, there exists a y' in Y such that
 Used in proof of norm_ineq_iInf_eps.
 --/
 lemma norm_leq_iInf_div_eps
-    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
-    {Y : Subspace ℝ X} (hFc : IsClosed (Y : Set X))
+    {𝕜 : Type u_1} [NormedField 𝕜]
+    {X : Type} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+    {Y : Subspace 𝕜 X} (hFc : IsClosed (Y : Set X))
     (x' : X) (hF : x' ∉ Y)
     (ε : ℝ ) (hε : ε > 0) (hε2 : ε < 1):
     ∃ y' : Y, ‖x'-y'‖ ≤ ⨅ y : Y, ‖x'-y‖/(1-ε) := by
@@ -98,8 +99,9 @@ divided by 1-ε.
 Used in proof of riesz_lemma_norm.
 --/
 lemma norm_ineq_iInf_eps
-    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
-    {Y : Subspace ℝ X}
+    {𝕜 : Type u_1} [NormedField 𝕜]
+    {X : Type} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+    {Y : Subspace 𝕜 X}
     (hFc : IsClosed (Y : Set X)) (x' : X) (hF : x' ∉ Y)
     (ε : ℝ ) (hε : ε > 0) (hε2 : ε < 1):
     ∃ y' : Y, ‖x'-y'‖ ≤ ⨅ y : Y, ‖x'-y‖/(1-ε) := by
@@ -113,7 +115,8 @@ Proof that the norm of normalized x is 1.
 Used in proof of riesz_lemma_norm.
 --/
 lemma norm_of_normalized
-    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X] (x : X) (h1 : ‖x‖ ≠ 0):
+    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+    (x : X) (h1 : ‖x‖ ≠ 0):
     ‖(1/‖x‖) • (x)‖ = 1 := by
   rw [norm_smul]
   simp only [one_div, norm_inv, norm_norm]
@@ -249,10 +252,11 @@ is finite dimensional.
 Used in g_riesz_next and g_riesz_next_spec.
 --/
 lemma fin_dim_Y_span_riesz
-    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
+    {𝕜 : Type u_1} [NormedField 𝕜]
+    {X : Type} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
     (k : ℕ) (g' : (m : ℕ) → m < k → X) :
-    let Y : Subspace ℝ X := Submodule.span ℝ {x | ∃ i : {i : ℕ // i < k}, g' i.val i.property = x}
-    FiniteDimensional ℝ Y := by
+    let Y : Subspace 𝕜 X := Submodule.span 𝕜 {x | ∃ i : {i : ℕ // i < k}, g' i.val i.property = x}
+    FiniteDimensional 𝕜 Y := by
   intro Y
   have h : Set.Finite {x | ∃ i : {i : ℕ // i < k}, g' i.val i.property = x} := by
     apply Set.Finite.of_surjOn (s := ⊤) (f := fun (i :  {i : ℕ // i < k}) => g' i.val i.property)
@@ -261,7 +265,7 @@ lemma fin_dim_Y_span_riesz
       simp
     · exact Set.toFinite _
   let F : Finset X := h.toFinset
-  have hY : Y = Submodule.span ℝ F := by rw [Set.Finite.coe_toFinset]
+  have hY : Y = Submodule.span 𝕜 F := by rw [Set.Finite.coe_toFinset]
   rw [hY]
   apply FiniteDimensional.span_finset
 
@@ -272,12 +276,13 @@ of all previous element in a sequence there exists an element not in Y.
 Used in g_riesz_next and g_riesz_next_spec.
 --/
 lemma strict_sub_Y_span_riesz
-    {X : Type} [NormedAddCommGroup X] [NormedSpace ℝ X]
-    (h_inf : ¬FiniteDimensional ℝ X) (k : ℕ) (g' : (m : ℕ) → m < k → X) :
-    let Y : Subspace ℝ X := Submodule.span ℝ {x | ∃ i : {i : ℕ // i < k}, g' i.val i.property = x}
+    {𝕜 : Type u_1} [NormedField 𝕜]
+    {X : Type} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
+    (h_inf : ¬FiniteDimensional 𝕜 X) (k : ℕ) (g' : (m : ℕ) → m < k → X) :
+    let Y : Subspace 𝕜 X := Submodule.span 𝕜 {x | ∃ i : {i : ℕ // i < k}, g' i.val i.property = x}
     ∃ z, z ∉ Y := by
   intro Y
-  have hY_not_fin: FiniteDimensional ℝ Y := fin_dim_Y_span_riesz k g'
+  have hY_not_fin: FiniteDimensional 𝕜 Y := fin_dim_Y_span_riesz k g'
   have h1 : Y ≠ ⊤ := by
     intro h
     rw [h] at hY_not_fin
