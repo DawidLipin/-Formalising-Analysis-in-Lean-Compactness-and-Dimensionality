@@ -92,23 +92,6 @@ lemma norm_leq_iInf_div_eps
     linarith
   done
 
-/--
-Proof that the infimum norm of a difference is less than norm of difference
-of any two elements and that norm of difference is less than infimum norm
-divided by 1-ε.
-Used in proof of riesz_lemma_norm.
---/
-lemma norm_ineq_iInf_eps
-    {𝕜 : Type u_1} [NormedField 𝕜]
-    {X : Type} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
-    {Y : Subspace 𝕜 X}
-    (hFc : IsClosed (Y : Set X)) (x' : X) (hF : x' ∉ Y)
-    (ε : ℝ ) (hε : ε > 0) (hε2 : ε < 1):
-    ∃ y' : Y, ‖x'-y'‖ ≤ ⨅ y : Y, ‖x'-y‖/(1-ε) := by
-  have lemma0 := norm_leq_iInf_div_eps hFc x' hF ε hε hε2
-  cases' lemma0 with y' hy'
-  use y'
-
 
 /--
 Proof that the norm of normalized x is 1.
@@ -155,7 +138,6 @@ lemma eps_leq_normal_diff
   -- it follows directly by rearranging second part of ht iInf_leq_all
   -- and the fact that (y' + ‖x' - ↑y'‖ • y) ∈ Y
   intro y
-
   -- Prove statments needed for assumptions of further lemmas
   -- and to simplify the goal
   have h3 : ‖x'-y'.val‖ ≠ 0 := norm_dist_ne_0 x' hF y'
