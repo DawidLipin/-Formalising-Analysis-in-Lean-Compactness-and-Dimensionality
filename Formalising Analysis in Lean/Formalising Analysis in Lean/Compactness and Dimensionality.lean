@@ -45,7 +45,7 @@ lemma iInf_leq_all
 /--
 Proof that for any small ε > 0 and x not in Y, there exists a y' in Y such that
 ‖x-y'‖ is less than infimum of ‖x-y‖ (with respect to y) divided by 1-ε.
-Used in proof of norm_ineq_iInf_eps.
+Used in proof of riesz_lemma_norm.
 --/
 lemma norm_leq_iInf_div_eps
     {𝕜 : Type u_1} [NormedField 𝕜]
@@ -198,10 +198,10 @@ theorem riesz_lemma_norm
   -- Most important parts of this proof have been proven above
   cases' hF with x' hx'
   have corr_iInf : ∃ y' : Y, ‖x'-y'‖ ≤ ⨅ y : Y, ‖x'-y‖/(1-ε) :=
-    norm_ineq_iInf_eps hFc x' hx' ε hε hε2
+    norm_leq_iInf_div_eps hFc x' hx' ε hε hε2
   cases' corr_iInf with y' hy'
   -- Consider x = (1/‖x'-y'.val‖) • (x' - y'.val), with x' obtained from hF and
-  -- y' from theorem proven above (norm_ineq_iInf_eps)
+  -- y' from theorem proven above (norm_leq_iInf_div_eps)
   use (1/‖x'-y'.val‖) • (x' - y'.val)
   have x_minus_y_ne_0 : ‖x'-y'.val‖ ≠ 0 := norm_dist_ne_0 x' hx' y'
   have norm_div_one : ‖(1/‖x'-y'.val‖) • (x' - y'.val)‖ = 1 :=
@@ -290,12 +290,10 @@ noncomputable def g_riesz_next
     (h_inf : ¬FiniteDimensional ℝ X) (ε : ℝ) (hε : ε > 0)
     (hε2 : ε < 1) (k : ℕ) (g' : (m : ℕ) → m < k → X) : X :=
   let Y : Subspace ℝ X := Submodule.span ℝ {x | ∃ i : {i : ℕ // i < k}, g' i.val i.property = x}
-  -- Statment below is needed for hY' but never called directly
+  -- Statment below is needed to show Y is closed but never called directly
   have _: FiniteDimensional ℝ Y := fin_dim_Y_span_riesz k g'
-  have hY : ∃ z, z ∉ Y := strict_sub_Y_span_riesz h_inf k g'
-  have hY' : IsClosed (Y : Set X) := Submodule.closed_of_finiteDimensional Y
-  have := riesz_lemma_norm hY' hY ε hε hε2
-  this.choose
+  (riesz_lemma_norm (Submodule.closed_of_finiteDimensional Y)
+      (strict_sub_Y_span_riesz h_inf k g') ε hε hε2).choose
 
 /--
 Proof of properties of g_riesz_next obtained from
@@ -310,12 +308,10 @@ lemma g_riesz_next_spec
     g_riesz_next h_inf ε hε hε2 k g' ∉ Y ∧ ‖g_riesz_next h_inf ε hε hε2 k g'‖ = 1 ∧
     ⨅ y : Y, ‖g_riesz_next h_inf ε hε hε2 k g' - y‖ ≥ 1-ε := by
   intro Y
-  -- Statment below is needed for hY' but never called directly
+  -- Statment below is needed to show Y is closed but never called directly
   have _: FiniteDimensional ℝ Y := fin_dim_Y_span_riesz k g'
-  have hY : ∃ z, z ∉ Y := strict_sub_Y_span_riesz h_inf k g'
-  have hY' : IsClosed (Y : Set X) := Submodule.closed_of_finiteDimensional Y
-  have := riesz_lemma_norm hY' hY ε hε hε2
-  exact this.choose_spec
+  exact (riesz_lemma_norm (Submodule.closed_of_finiteDimensional Y)
+      (strict_sub_Y_span_riesz h_inf k g') ε hε hε2).choose_spec
 
 /--
 Definition of a function representing a sequence
